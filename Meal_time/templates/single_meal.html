@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ meal.name }}</h1>
+<h2>Ingredients</h2>
+<table>
+    <tr>
+        <td>Amount</td>
+        <td>Ingredient</td>
+    </tr>
+    {% for ingredient in meal.ingredients %}
+    <tr>
+        <td>{{ ingredient.amount }}</td>
+        <td>{{ ingredient.ingredient_name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<h2>Directions</h2>
+{{ meal.directions }}
+{% endblock %}

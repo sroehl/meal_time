@@ -1,15 +1,16 @@
 from Meal_time import app, lm
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from .forms import LoginForm
+from .forms import LoginForm, MealForm
 from .user import User
-
+from bson.objectid import ObjectId
+import dumper
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if form.validate_on_submit():
         user = app.config['USERS_COLLECTION'].find_one({"_id": form.username.data})
         if user and User.validate_login(user['password'], form.password.data):
             user_obj = User(user['_id'])
@@ -34,11 +35,36 @@ def user():
     return render_template('user.html', user=current_user.get_id())
 
 
-@app.route('/meals')
+@app.route('/meals', methods=['GET', 'POST'])
 @login_required
 def meals():
-    meals={}
-    return render_template('meals.html', title='Meals', username=current_user.get_id(), meals=meals)
+    form = MealForm()
+    if form.validate_on_submit():
+        meal = {}
+        meal['name'] = form.meal_name.data
+        meal['directions'] = form.directions.data
+        meal['ingredients'] = form.ingredients.data
+        meal['user'] = current_user.get_id()
+        app.config['MEALS_COLLECTION'].insert(meal)
+        flash("Created meal!", category='success')
+        return redirect('/meals')
+    meals = app.config['MEALS_COLLECTION'].find({"user": current_user.get_id()})
+    # ingredients = []
+    # for i in range(0, 10):
+    #    ingredients.append({'1', '1'})
+    return render_template('meals.html', title='Meals', username=current_user.get_id(), meals=meals, form=form)
+
+
+@app.route('/meal/<meal_id>')
+@login_required
+def meal(meal_id):
+    print(meal_id)
+    meal = app.config['MEALS_COLLECTION'].find_one({"_id": ObjectId(meal_id)})
+    print(meal)
+    if meal is None:
+        flash("Could not find meal!", category='error')
+        return redirect('/meals')
+    return render_template('single_meal.html', title=meal['name'], meal=meal)
 
 
 @app.route('/calendar')
