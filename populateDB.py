@@ -6,15 +6,10 @@ from pymongo.errors import DuplicateKeyError
 
 
 def main():
-    # Connect to the DB
     collection = MongoClient()["MealTime"]["users"]
-
-    # Ask for data to store
     user = input("Enter your username: ")
     password = input("Enter your password: ")
     pass_hash = generate_password_hash(password, method='pbkdf2:sha256')
-
-    # Insert the user in the DB
     try:
         collection.insert({"_id": user, "password": pass_hash})
         print("User created.")

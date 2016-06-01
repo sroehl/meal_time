@@ -1,16 +1,9 @@
 from Meal_time import app, lm
-from flask import render_template,request,redirect, url_for, flash
-from flask.ext.login import login_user, logout_user, login_required, current_user
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from .forms import LoginForm
 from .user import User
 
-@app.route('/index')
-@login_required
-def index():
-	user = {'username': 'Steve'}
-	posts = [{'author': {'username': 'Steve'}, 'body': 'This is a test'},
-		 {'author': {'username': 'Jenny'}, 'body': 'This is also a test'}]
-	return render_template('index.html', title='Home', user=user, posts=posts)
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -22,10 +15,10 @@ def login():
             user_obj = User(user['_id'])
             login_user(user_obj)
             flash("Logged in successfully!", category='success')
-            return redirect('/index')
+            return redirect('/meals')
         flash("Wrong username or password!", category='error')
     if current_user.is_authenticated:
-        return redirect('/index')
+        return redirect('/meals')
     return render_template('login.html', title='Login', form=form)
 
 
@@ -34,36 +27,33 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/user/<username>')
-@login_required
-def user(username):
-    user = app.config['USERS_COLLECTION'].find_one({"_id": username})
-    if user == None:
-        flash("User {} not found.".format(username))
-        return redirect(url_for('index'))
-    posts = [
-      {'author': user, 'body': 'Test post #1'},
-      {'author': user, 'body': 'Test post #2'},
-    ]
-    return render_template('user.html', user=user, posts=posts)
 
-@app.route('/meals/<username>')
+@app.route('/user')
 @login_required
-def meals(username):
-    #TODO: Finish this!
-    pass
+def user():
+    return render_template('user.html', user=current_user.get_id())
 
-@app.route('/calendar/<username>')
-@login_required
-def calendar(username):
-    #TODO: Finish this!
-    pass
 
-@app.route('/groceries/<username>')
+@app.route('/meals')
 @login_required
-def groceries(username):
-    #TODO: Finish this!
-    pass
+def meals():
+    meals={}
+    return render_template('meals.html', title='Meals', username=current_user.get_id(), meals=meals)
+
+
+@app.route('/calendar')
+@login_required
+def calendar():
+    calendar={}
+    return render_template('calendar.html', title='Calendar', username=current_user.get_id(), calendar=calendar)
+
+
+@app.route('/groceries')
+@login_required
+def groceries():
+    groceries={}
+    return render_template('groceries.html', title='Groceries', username=current_user.get_id(), groceries=groceries)
+
 
 @lm.user_loader
 def load_user(username):

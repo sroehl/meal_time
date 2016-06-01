@@ -8,15 +8,15 @@
     {% endif %}
 </head>
 <body>
-<div> <a href="/index">Home</a>
+<div>
     {% if current_user.is_authenticated %}
-        |<a href="{{ url_for('meals', username=current_user.username) }}">Meals</a>
-        |<a href="{{ url_for('calendar', username=current_user.username) }}">Calendar</a>
-        |<a href="{{ url_for('groceries', username=current_user.username) }}">Groceries</a>
-        |<a href="{{ url_for('user', username=current_user.username) }}">Profile</a>
+        <a href="{{ url_for('meals') }}">Meals</a>
+        |<a href="{{ url_for('calendar') }}">Calendar</a>
+        |<a href="{{ url_for('groceries') }}">Groceries</a>
+        |<a href="{{ url_for('user') }}">Profile</a>
         |<a href="{{ url_for('logout') }}">Logout</a>
     {% else %}
-        |<a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('login') }}">Login</a>
     {% endif %}
 </div>
 <hr>
@@ -26,8 +26,11 @@
     {% for message in messages %}
     <li>{{ message }}</li>
     {% endfor %}
+</ul>
     {% endif %}
     {% endwith %}
+</hr>
+<body>
     {% block content %}{% endblock %}
 </body>
 </html>

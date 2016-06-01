@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Groceries for {{ username }}!</h1>
+    {% for grocery in groceries %}
+    <div><p>{{ grocery.name }}</p></div>
+    {% endfor %}
+{% endblock %}

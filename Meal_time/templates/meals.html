@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Meals for {{ username }}!</h1>
+    {% for meal in meals %}
+    <div><p>{{ meal.name }}</p></div>
+    {% endfor %}
+{% endblock %}
