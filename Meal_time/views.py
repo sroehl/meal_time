@@ -90,7 +90,30 @@ def calendar(view):
 @app.route('/groceries')
 @login_required
 def groceries():
-    groceries={}
+    days_since_epoch = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).days
+    day_of_week = datetime.datetime.now().weekday()
+    low_range = days_since_epoch - (day_of_week + 1)
+    high_range = days_since_epoch + (6 - day_of_week)
+    user_calendar = app.config['CALENDAR_COLLECTION'].find({"days": {"$gte": low_range, "$lt": high_range},
+                                                            "user": current_user.get_id(),
+                                                            "bought": {"$ne": 'true'}}).sort("days",
+                                                                                             pymongo.ASCENDING)
+    groceries = []
+    for day in user_calendar:
+        meal = app.config['MEALS_COLLECTION'].find_one({"_id": day['meal_id']})
+        for ingredient in meal['ingredients']:
+            # TODO: Crappy workaround until ingredients are correctly dynamic
+            if ingredient['ingredient_name'] == '':
+                continue
+            # TODO: Need to make units work
+            # for grocery in groceries:
+            #    if grocery['name'] == ingredient['ingredient_name']:
+            #        grocery['amount'] += ingredient['amount']
+            #        continue
+            grocery = {"name": ingredient['ingredient_name'], "amount": ingredient['amount'],
+                       "id": str(day['_id']) + ingredient['ingredient_name']}
+            groceries.append(grocery)
+    print(groceries)
     return render_template('groceries.html', title='Groceries', username=current_user.get_id(), groceries=groceries)
 
 

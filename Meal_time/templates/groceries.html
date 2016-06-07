@@ -1,7 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Groceries for {{ username }}!</h1>
+<table>
+    <tr>
+        <td>Bought</td>
+        <td>Amount</td>
+        <td>Ingredient</td>
+    </tr>
     {% for grocery in groceries %}
-    <div><p>{{ grocery.name }}</p></div>
+    <tr>
+        <td>
+            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="checkbox-{{ grocery.id }}">
+                <input type="checkbox" id="checkbox-{{ grocery.id }}" class="mdl-checkbox__input">
+            </label>
+        </td>
+        <td>{{ grocery.amount }}</td>
+        <td>{{ grocery.name }}</td>
+    </tr>
     {% endfor %}
+</table>
 {% endblock %}
