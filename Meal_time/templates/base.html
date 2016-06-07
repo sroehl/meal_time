@@ -1,5 +1,8 @@
 <html>
 <head>
+    <link rel="stylesheet" href="/static/material.min.css">
+    <script src="/static/material.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% if title %}
     <title>{{ title }} - Meal Time</title>
@@ -11,7 +14,7 @@
 <div>
     {% if current_user.is_authenticated %}
         <a href="{{ url_for('meals') }}">Meals</a>
-        |<a href="{{ url_for('calendar') }}">Calendar</a>
+    |<a href="{{ url_for('calendar', view='day') }}">Calendar</a>
         |<a href="{{ url_for('groceries') }}">Groceries</a>
         |<a href="{{ url_for('user') }}">Profile</a>
         |<a href="{{ url_for('logout') }}">Logout</a>
@@ -30,7 +33,6 @@
     {% endif %}
     {% endwith %}
 </hr>
-<body>
     {% block content %}{% endblock %}
 </body>
 </html>

@@ -4,7 +4,8 @@ from flask_login import login_user, logout_user, login_required, current_user
 from .forms import LoginForm, MealForm
 from .user import User
 from bson.objectid import ObjectId
-import dumper
+import pymongo
+import datetime
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -67,11 +68,23 @@ def meal(meal_id):
     return render_template('single_meal.html', title=meal['name'], meal=meal)
 
 
-@app.route('/calendar')
+@app.route('/calendar/<view>')
 @login_required
-def calendar():
-    calendar={}
-    return render_template('calendar.html', title='Calendar', username=current_user.get_id(), calendar=calendar)
+def calendar(view):
+    print(view)
+    if view == 'day':
+        days_since_epoch = (datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).days
+        user_calendar = app.config['CALENDAR_COLLECTION'].find(
+            {"days": days_since_epoch, "user": current_user.get_id()})
+    if view == 'week':
+        days_since_epoch = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).days
+        day_of_week = datetime.datetime.now().weekday()
+        low_range = days_since_epoch - (day_of_week + 1)
+        high_range = days_since_epoch + (6 - day_of_week)
+        user_calendar = app.config['CALENDAR_COLLECTION'].find({"days": {"$gte": low_range, "$lt": high_range},
+                                                                "user": current_user.get_id()}).sort("days",
+                                                                                                     pymongo.ASCENDING)
+    return render_template('calendar.html', title='Calendar', username=current_user.get_id(), calendar=user_calendar)
 
 
 @app.route('/groceries')

@@ -29,6 +29,6 @@
 </form>
 <h2>Meals</h2>
 {% for meal in meals %}
-<a href="{{ url_for('meal', meal_id=meal._id) }}">{{ meal.name }}</a>
+<a href="{{ url_for('meal', meal_id=meal._id) }}">{{ meal.name }}</a><br>
 {% endfor %}
 {% endblock %}

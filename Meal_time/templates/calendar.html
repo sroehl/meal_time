@@ -1,4 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Calendar for {{ username }}!</h1>
+<a href="{{ url_for('calendar', view='day') }}">Day</a>
+<a href="{{ url_for('calendar', view='week') }}">Week</a>
+<div class="mdl-grid">
+    {% for day in calendar %}
+    <div class="mdl-cell mdl-cell--1-col">
+        {{ day.date }}<br>
+        {{ day.meal_name }}
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}
