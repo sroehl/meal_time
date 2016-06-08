@@ -16,4 +16,13 @@
 </table>
 <h2>Directions</h2>
 {{ meal.directions }}
+<h2>Assign meal</h2>
+<div id="meal_id" hidden>{{ meal._id }}</div>
+<select class="mdl-select__input" id="assign">Assign
+    <option value="none">Assign</option>
+    {% for day in days %}
+    <option value="{{ day.id }}">{{ day.name }}</option>
+    {% endfor %}
+</select>
+<script src="/static/single_meal.js"></script>
 {% endblock %}

@@ -6,6 +6,8 @@ from .user import User
 from bson.objectid import ObjectId
 import pymongo
 import datetime
+from calendar import month_name, day_name
+import json
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
@@ -56,24 +58,31 @@ def meals():
     return render_template('meals.html', title='Meals', username=current_user.get_id(), meals=meals, form=form)
 
 
-@app.route('/meal/<meal_id>')
+@app.route('/meal/<meal_id>', methods=['GET', 'POST'])
 @login_required
 def meal(meal_id):
-    print(meal_id)
     meal = app.config['MEALS_COLLECTION'].find_one({"_id": ObjectId(meal_id)})
-    print(meal)
     if meal is None:
         flash("Could not find meal!", category='error')
         return redirect('/meals')
-    return render_template('single_meal.html', title=meal['name'], meal=meal)
+
+    day_of_week = datetime.datetime.now().weekday()
+    beginning_day = datetime.datetime.now() - datetime.timedelta(days=day_of_week + 1)
+    days = []
+    for i in range(0, 7):
+        raw_day = beginning_day + datetime.timedelta(days=i)
+        day = month_name[raw_day.month] + " " + str(raw_day.day)
+        days_since_epoch = (raw_day - datetime.datetime(1970, 1, 1)).days
+        days.append({"name": day, "id": days_since_epoch})
+    return render_template('single_meal.html', title=meal['name'], meal=meal, days=days)
 
 
 @app.route('/calendar/<view>')
 @login_required
 def calendar(view):
-    print(view)
     if view == 'day':
-        days_since_epoch = (datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).days
+        days_since_epoch = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).days
+        print(days_since_epoch)
         user_calendar = app.config['CALENDAR_COLLECTION'].find(
             {"days": days_since_epoch, "user": current_user.get_id()})
     if view == 'week':
@@ -115,6 +124,24 @@ def groceries():
             groceries.append(grocery)
     print(groceries)
     return render_template('groceries.html', title='Groceries', username=current_user.get_id(), groceries=groceries)
+
+
+@app.route('/assign_meal', methods=['POST'])
+@login_required
+def assign_meal():
+    meal_id = request.form['meal_id']
+    date = request.form['date']
+    if (date is not None and date != 'none') and meal_id is not None:
+        meal = app.config['MEALS_COLLECTION'].find_one({"_id": ObjectId(meal_id)})
+        if meal is not None:
+            insert_vals = {"user": current_user.get_id(), "days": int(date), "meal_name": meal['name'],
+                           "meal_id": meal_id}
+            try:
+                app.config['CALENDAR_COLLECTION'].insert(insert_vals)
+            except pymongo.errors.DuplicateKeyError:
+                pass
+            return json.dumps({'status': 'success'})
+    return json.dumps({'status': 'failure'})
 
 
 @lm.user_loader
