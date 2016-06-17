@@ -43,10 +43,21 @@ def user():
 def meals():
     form = MealForm()
     if form.validate_on_submit():
+        ingredients = []
+        print(request.values)
+        for value in request.values:
+            print(request.values[value])
+            if 'amount' in value:
+                number = value.split('_')[1]
+                print("number: {}".format(number))
+                amount = request.values[value]
+                ingredient = request.values['ingredient_' + number]
+                ingredients.append({"amount": amount, "ingredient_name": ingredient})
+        print(ingredients)
         meal = {}
         meal['name'] = form.meal_name.data
         meal['directions'] = form.directions.data
-        meal['ingredients'] = form.ingredients.data
+        meal['ingredients'] = ingredients
         meal['user'] = current_user.get_id()
         app.config['MEALS_COLLECTION'].insert(meal)
         flash("Created meal!", category='success')
@@ -111,8 +122,7 @@ def groceries():
     for day in user_calendar:
         meal = app.config['MEALS_COLLECTION'].find_one({"_id": day['meal_id']})
         for ingredient in meal['ingredients']:
-            # TODO: Crappy workaround until ingredients are correctly dynamic
-            if ingredient['ingredient_name'] == '':
+            if ingredient['ingredient_name'] == '' or ingredient['amount'] == '':
                 continue
             # TODO: Need to make units work
             # for grocery in groceries:
